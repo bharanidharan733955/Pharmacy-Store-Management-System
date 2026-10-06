@@ -1,0 +1,30 @@
+# Compiled Java class files
+*.class
+
+# Executables & Archives
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# IDE & Editor Configurations
+.idea/
+.vscode/
+*.iml
+*.nbattrs
+*.settings/
+.project
+.classpath
+
+# Build Output Directories
+bin/
+out/
+target/
+build/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db

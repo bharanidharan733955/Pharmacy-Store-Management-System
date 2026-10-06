@@ -1,0 +1,35 @@
+# Compiled Java class files
+*.class
+
+# Package & Binary Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual Environment & IDE Folders
+.idea/
+.vscode/
+*.iml
+*.settings/
+.project
+.classpath
+
+# Build Directories & Output
+target/
+bin/
+build/
+out/
+
+# Logs & Operating System Files
+*.log
+.DS_Store
+Thumbs.db
+
+# SSH Keys Security Protection (NEVER COMMIT KEYS)
+*.pem
+*.key
+id_rsa*
+id_ed25519*
