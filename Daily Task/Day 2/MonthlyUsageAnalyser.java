@@ -5,9 +5,6 @@ public class MonthlyUsageAnalyser {
     public static final int MEDIUM_USAGE_SLAB = 500;
 
     public static void main(String[] args) {
-        System.out.println("==================================================");
-        System.out.println("       MONTHLY PHARMACY USAGE ANALYSER           ");
-        System.out.println("==================================================");
 
         // 1-D Array: 12 Months of Medicine Sales / Usage Data (Units)
         int[] monthlyUsage = {450, 620, 890, 310, 750, 920, 580, 640, 710, 830, 490, 960};
