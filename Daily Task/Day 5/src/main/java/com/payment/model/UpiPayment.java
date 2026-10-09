@@ -29,15 +29,12 @@ public class UpiPayment extends Payment implements Refundable {
     }
 
     /**
-     * Overloaded pay method for UPI with UPI PIN check.
+     * Overloaded pay method for UPI Recurring Auto-Pay Mandate.
      */
-    public boolean pay(double amount, String upiPin) {
-        if (upiPin == null || upiPin.length() < 4 || upiPin.length() > 6) {
-            System.err.println("UPI Payment Failed: Invalid UPI PIN length.");
-            setStatus(PaymentStatus.FAILED);
-            return false;
+    public boolean pay(double amount, String mandateId, boolean isAutoPay) {
+        if (isAutoPay) {
+            System.out.println("Processing UPI Recurring Auto-Pay Mandate [" + mandateId + "] for amount: ₹" + amount);
         }
-        System.out.println("UPI PIN authenticated successfully.");
         return pay(amount);
     }
 
