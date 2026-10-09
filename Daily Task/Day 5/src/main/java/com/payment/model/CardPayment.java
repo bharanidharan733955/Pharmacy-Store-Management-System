@@ -35,13 +35,14 @@ public class CardPayment extends Payment implements Refundable {
     @Override
     public boolean processPayment() {
         System.out.println("Validating Card Details for " + cardHolderName + " (" + cardType + ")...");
-        // Simulate gateway validation logic
+        // Student 2 Feature: Calculate 2% cashback reward points earned
+        int rewardPointsEarned = (int) (getAmount() * 0.02);
         if (getAmount() <= 0) {
             setStatus(PaymentStatus.FAILED);
             return false;
         }
         setStatus(PaymentStatus.SUCCESS);
-        System.out.println("Card Payment SUCCESSful. Charged ₹" + getAmount() + " to Card: " + cardNumber);
+        System.out.println("Card Payment SUCCESSful. Charged ₹" + getAmount() + " to Card: " + cardNumber + " | Reward Points Earned: " + rewardPointsEarned);
         return true;
     }
 
