@@ -35,16 +35,20 @@ public class CardPayment extends Payment implements Refundable {
     @Override
     public boolean processPayment() {
         System.out.println("Validating Card Details for " + cardHolderName + " (" + cardType + ")...");
-        // Student 1 Feature: Calculate 1.5% processing fee
+        // Combined Feature (Student 1 + Student 2 Conflict Resolution):
+        // Student 1: Calculate 1.5% processing fee
         double convenienceFee = getAmount() * 0.015;
         double totalCharged = getAmount() + convenienceFee;
+        // Student 2: Calculate 2% cashback reward points earned
+        int rewardPointsEarned = (int) (getAmount() * 0.02);
+
         if (getAmount() <= 0) {
             setStatus(PaymentStatus.FAILED);
             return false;
         }
         setStatus(PaymentStatus.SUCCESS);
-        System.out.printf("Card Payment SUCCESSful. Base: ₹%.2f, Fee: ₹%.2f, Total Charged: ₹%.2f to Card: %s%n",
-                getAmount(), convenienceFee, totalCharged, cardNumber);
+        System.out.printf("Card Payment SUCCESSful. Base: ₹%.2f, Fee: ₹%.2f, Total Charged: ₹%.2f to Card: %s | Reward Points Earned: %d%n",
+                getAmount(), convenienceFee, totalCharged, cardNumber, rewardPointsEarned);
         return true;
     }
 
