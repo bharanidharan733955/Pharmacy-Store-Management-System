@@ -1,9 +1,7 @@
 package com.pharmacy.core.service;
 
-import com.pharmacy.core.model.Batch;
-import com.pharmacy.core.model.Invoice;
-import com.pharmacy.core.model.Medicine;
-import com.pharmacy.core.model.Supplier;
+import com.pharmacy.core.model.*;
+import com.pharmacy.core.strategy.DiscountStrategy;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,6 +15,7 @@ public class PharmacyService {
     private final List<Supplier> suppliers = new ArrayList<>();
     private final List<Batch> batches = new ArrayList<>();
     private final List<Invoice> invoices = new ArrayList<>();
+    private User currentUser = new AdminUser("admin01", "admin@pharmacy.com", "Default Administrator");
     private String currentRole = "Admin";
 
     public PharmacyService() {
@@ -134,5 +133,22 @@ public class PharmacyService {
         return batches.stream()
                 .filter(b -> b.getExpiryDate().isBefore(LocalDate.now()))
                 .toList();
+    }
+
+    // Role Hierarchy & Strategy Pattern Helpers
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(User user) {
+        if (user != null) {
+            this.currentUser = user;
+            this.currentRole = user.getRole().getDisplayName();
+        }
+    }
+
+    public double calculateDiscount(double subtotal, int itemQty, DiscountStrategy strategy) {
+        if (strategy == null) return 0.0;
+        return strategy.calculateDiscount(subtotal, itemQty, currentUser);
     }
 }
