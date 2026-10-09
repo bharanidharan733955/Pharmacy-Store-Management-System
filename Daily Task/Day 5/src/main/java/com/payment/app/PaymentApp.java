@@ -39,7 +39,10 @@ public class PaymentApp {
         System.out.println("\n[Overload 3 - pay(amount, discountPercentage)]:");
         upiPayment.pay(700.00, 10.0); // 10% discount on UPI
 
-        System.out.println("\n[Overload 4 - pay(amount, promoCode, promoDiscount)]:");
+        System.out.println("\n[Overload 4 - pay(amount, mandateId, isAutoPay) - Rebased Feature]:");
+        upiPayment.pay(850.00, "MANDATE-AUTO-9988", true);
+
+        System.out.println("\n[Overload 5 - pay(amount, promoCode, promoDiscount)]:");
         cashPayment.pay(400.00, "HEALTH20", 50.00);
 
         System.out.println("\n-------------------------------------------------");
