@@ -1,7 +1,21 @@
+# ==============================================================================
+# Java & Maven Build Artifacts
+# ==============================================================================
+target/
+**/target/
+bin/
+**/bin/
+out/
+**/out/
+build/
+**/build/
+.dist/
+**/.dist/
+
 # Compiled Java class files
 *.class
 
-# Executables & Archives
+# Package Files (Executables & Archives)
 *.jar
 *.war
 *.ear
@@ -10,21 +24,72 @@
 *.tar.gz
 *.rar
 
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# ==============================================================================
+# Node.js & Frontend (pharmacy-frontend)
+# ==============================================================================
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.vite/
+**/.vite/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Test coverage & caches
+coverage/
+*.lcov
+.eslintcache
+.stylelintcache
+
+# Environment variables & secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+
+# ==============================================================================
 # IDE & Editor Configurations
+# ==============================================================================
 .idea/
+**/.idea/
 .vscode/
+**/.vscode/
 *.iml
+*.iws
+*.ipr
 *.nbattrs
-*.settings/
+.nb-gradle/
+.settings/
+**/.settings/
 .project
 .classpath
 
-# Build Output Directories
-bin/
-out/
-target/
-build/
-
-# OS Generated Files
+# ==============================================================================
+# OS Generated Files & Temporary Files
+# ==============================================================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.tmp
+*.bak
+*.swp
+*~

@@ -95,26 +95,93 @@ public class PharmacyService {
                 .sum();
     }
 
-    // FR-6: POS Billing & Invoice Generation
+    // FR-6: POS Billing & Invoice Generation with Business Rules 1 & 2
     public Invoice processPOSBilling(String medicineId, int requestedQty) {
-        Optional<Medicine> medOpt = medicines.stream().filter(m -> m.getId().equalsIgnoreCase(medicineId)).findFirst();
-        if (medOpt.isEmpty()) return null;
+        return processPOSBilling(medicineId, requestedQty, null, null);
+    }
 
-        Medicine medicine = medOpt.get();
-        List<Batch> fefoBatches = getBatchesByFEFO(medicineId);
-        int remainingToFulfill = requestedQty;
+    public Invoice processPOSBilling(String medicineId, int requestedQty, String prescriptionReference) {
+        return processPOSBilling(medicineId, requestedQty, prescriptionReference, null);
+    }
 
-        for (Batch batch : fefoBatches) {
-            if (batch.getExpiryDate().isBefore(LocalDate.now())) continue; // Skip expired in POS
-            int available = batch.getQuantity();
-            int take = Math.min(available, remainingToFulfill);
-            batch.reduceQuantity(take);
-            remainingToFulfill -= take;
-            if (remainingToFulfill == 0) break;
+    public Invoice processPOSBilling(String medicineId, int requestedQty, String prescriptionReference, String specificBatchNumber) {
+        if (medicineId == null || medicineId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Medicine ID cannot be null or empty.");
+        }
+        if (requestedQty <= 0) {
+            throw new IllegalArgumentException("Requested quantity must be greater than zero.");
         }
 
-        if (remainingToFulfill > 0) {
-            return null; // Insufficient non-expired stock
+        Optional<Medicine> medOpt = medicines.stream()
+                .filter(m -> m.getId().equalsIgnoreCase(medicineId.trim()))
+                .findFirst();
+        if (medOpt.isEmpty()) {
+            throw new com.pharmacy.core.exception.ResourceNotFoundException("Medicine", medicineId);
+        }
+
+        Medicine medicine = medOpt.get();
+
+        // Business Rule 2: Scheduled medicines require a prescription reference
+        if (medicine.isRequiresPrescription()) {
+            if (prescriptionReference == null || prescriptionReference.trim().isEmpty()) {
+                throw new com.pharmacy.core.exception.InvalidPrescriptionException(medicine.getId(), medicine.getName());
+            }
+        }
+
+        // Business Rule 1: Expired medicine cannot be sold
+        if (specificBatchNumber != null && !specificBatchNumber.trim().isEmpty()) {
+            Optional<Batch> batchOpt = batches.stream()
+                    .filter(b -> b.getBatchNumber().equalsIgnoreCase(specificBatchNumber.trim()))
+                    .findFirst();
+            if (batchOpt.isEmpty()) {
+                throw new com.pharmacy.core.exception.ResourceNotFoundException("Batch", specificBatchNumber);
+            }
+            Batch targetBatch = batchOpt.get();
+            if (targetBatch.isExpired()) {
+                throw new com.pharmacy.core.exception.ExpiredBatchException(
+                        targetBatch.getBatchNumber(), medicine.getId(), targetBatch.getExpiryDate());
+            }
+            if (targetBatch.getQuantity() < requestedQty) {
+                throw new com.pharmacy.core.exception.InsufficientStockException(
+                        medicine.getId(), requestedQty, targetBatch.getQuantity());
+            }
+            targetBatch.reduceQuantity(requestedQty);
+        } else {
+            // FEFO Allocation: Select earliest-expiring eligible batch first, skip expired batches
+            List<Batch> allMedBatches = batches.stream()
+                    .filter(b -> b.getMedicineId().equalsIgnoreCase(medicineId))
+                    .toList();
+
+            List<Batch> eligibleBatches = allMedBatches.stream()
+                    .filter(b -> b.getQuantity() > 0 && !b.isExpired())
+                    .sorted(Comparator.comparing(Batch::getExpiryDate))
+                    .toList();
+
+            int totalEligibleStock = eligibleBatches.stream().mapToInt(Batch::getQuantity).sum();
+
+            if (totalEligibleStock == 0) {
+                boolean hasExpiredBatches = allMedBatches.stream().anyMatch(Batch::isExpired);
+                if (hasExpiredBatches) {
+                    throw new com.pharmacy.core.exception.ExpiredBatchException(
+                            "Cannot sell medicine '" + medicine.getName() + "': all existing stock batches have expired.");
+                } else {
+                    throw new com.pharmacy.core.exception.InsufficientStockException(medicine.getId(), requestedQty, 0);
+                }
+            }
+
+            if (totalEligibleStock < requestedQty) {
+                throw new com.pharmacy.core.exception.InsufficientStockException(
+                        medicine.getId(), requestedQty, totalEligibleStock);
+            }
+
+            // Decrement eligible batches in FEFO order atomically
+            int remainingToFulfill = requestedQty;
+            for (Batch batch : eligibleBatches) {
+                int take = Math.min(batch.getQuantity(), remainingToFulfill);
+                batch.reduceQuantity(take);
+                remainingToFulfill -= take;
+                if (remainingToFulfill == 0) break;
+            }
         }
 
         double totalAmount = medicine.getUnitPrice() * requestedQty;
